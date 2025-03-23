@@ -1,0 +1,4 @@
+**/wgpu-native
+*.so
+*.a
+*.out

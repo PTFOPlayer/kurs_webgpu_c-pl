@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "wgpu.h": "c",
+        "fstream": "cpp",
+        "*.tcc": "cpp"
+    }
+}
