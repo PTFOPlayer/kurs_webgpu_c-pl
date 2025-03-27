@@ -12,7 +12,7 @@ cpp_files = $(shell find ./src -name '*.cpp')
 .PHONY: prepare build
 
 build_wgpu:
-	-git clone https://github.com/gfx-rs/wgpu-native
+	-git clone --recursive https://github.com/gfx-rs/wgpu-native
 	cd wgpu-native; cargo build --release
 
 prepare: build_wgpu 

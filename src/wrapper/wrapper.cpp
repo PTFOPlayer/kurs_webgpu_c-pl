@@ -4,8 +4,9 @@
 #include <iostream>
 #include <string>
 
-#include "include/webgpu.h"
-#include "include/wgpu.h"
+#include "../include/webgpu.h"
+#include "../include/wgpu.h"
+#include "compute_pass.hpp"
 
 WGPUWrapper::~WGPUWrapper() {}
 
@@ -67,12 +68,26 @@ WGPUBuffer WGPUWrapper::create_buffer(string lablel, WGPUBufferUsage flags, size
 }
 
 WGPUBindGroup WGPUWrapper::create_compute_bind_group(string label, WGPUComputePipeline compute_pipeline,
-                                                     size_t entry_count, WGPUBindGroupEntry *entries) {
-    WGPUBindGroupLayout bind_group_layout = wgpuComputePipelineGetBindGroupLayout(compute_pipeline, 0);
+                                                     size_t bindgroup_id, size_t entry_count,
+                                                     WGPUBindGroupEntry *entries) {
+    WGPUBindGroupLayout bind_group_layout = wgpuComputePipelineGetBindGroupLayout(compute_pipeline, bindgroup_id);
 
     WGPUBindGroupDescriptor bind_group_desc = {
-        .label = {label.data(), WGPU_STRLEN}, .layout = bind_group_layout, .entryCount = 1, .entries = entries};
+        .label = {label.data(), WGPU_STRLEN}, .layout = bind_group_layout, .entryCount = entry_count, .entries = entries};
     return wgpuDeviceCreateBindGroup(this->device, &bind_group_desc);
+}
+
+WGPUComputePipeline WGPUWrapper::create_compute_pipeline(string label, WGPUShaderModule shdr_mod, string entry ) {
+    WGPUComputePipelineDescriptor compute_desc = {
+        .label = {label.data(), WGPU_STRLEN},
+        .compute =
+            {
+                .module = shdr_mod,
+                .entryPoint = {entry.data(), WGPU_STRLEN},
+            },
+    };
+    return wgpuDeviceCreateComputePipeline(this->device, &compute_desc);
+
 }
 
 WGPUCommandEncoder WGPUWrapper::create_command_encoder(string label) {
@@ -82,9 +97,9 @@ WGPUCommandEncoder WGPUWrapper::create_command_encoder(string label) {
     return wgpuDeviceCreateCommandEncoder(this->device, &encoder_desc);
 }
 
-WGPUComputePassEncoder WGPUWrapper::create_compute_pass_encoder(string label, WGPUCommandEncoder command_encoder) {
+ComputePass WGPUWrapper::create_compute_pass_encoder(string label, WGPUCommandEncoder command_encoder) {
     WGPUComputePassDescriptor compute_pass_desc = {
         .label = {label.data(), WGPU_STRLEN},
     };
-    return wgpuCommandEncoderBeginComputePass(command_encoder, &compute_pass_desc);
+    return ComputePass(wgpuCommandEncoderBeginComputePass(command_encoder, &compute_pass_desc));
 }

@@ -3,7 +3,8 @@
 
 #include "include/webgpu.h"
 #include "include/wgpu.h"
-#include "wrapper.hpp"
+#include "wrapper/compute_pass.hpp"
+#include "wrapper/wrapper.hpp"
 
 using namespace std;
 const size_t buffer_f32_len = 8192;
@@ -21,38 +22,44 @@ int main(int argc, char const *argv[]) {
     WGPUBuffer storage_buffer_x = wrapper.create_buffer(
         "storage_buffer_x", WGPUBufferUsage_Storage | WGPUBufferUsage_CopyDst | WGPUBufferUsage_CopySrc, buffer_size);
 
-    WGPUComputePipelineDescriptor compute_desc = {
-        .label = {"compute_pipeline", WGPU_STRLEN},
-        .compute =
-            {
-                .module = shdr_mod,
-                .entryPoint = {"main", WGPU_STRLEN},
-            },
-    };
+    WGPUBuffer storage_buffer_y =
+        wrapper.create_buffer("storage_buffer_y", WGPUBufferUsage_Storage | WGPUBufferUsage_CopyDst, buffer_size);
 
-    WGPUComputePipeline compute_pipeline = wgpuDeviceCreateComputePipeline(wrapper.device, &compute_desc);
+    WGPUBuffer storage_buffer_a =
+        wrapper.create_buffer("storage_buffer_a", WGPUBufferUsage_Storage | WGPUBufferUsage_CopyDst, sizeof(float));
 
-    WGPUBindGroupLayout bind_group_layout = wgpuComputePipelineGetBindGroupLayout(compute_pipeline, 0);
+    WGPUComputePipeline compute_pipeline = wrapper.create_compute_pipeline("compute_pipeline", shdr_mod, "main");
 
-    WGPUBindGroupEntry entries[] = {(const WGPUBindGroupEntry){
-        .binding = 0,
-        .buffer = storage_buffer_x,
-        .offset = 0,
-        .size = buffer_size,
-    }};
+    WGPUBindGroupEntry entries[] = {{
+                                        .binding = 0,
+                                        .buffer = storage_buffer_x,
+                                        .offset = 0,
+                                        .size = buffer_size,
+                                    },
+                                    {
+                                        .binding = 1,
+                                        .buffer = storage_buffer_y,
+                                        .offset = 0,
+                                        .size = buffer_size,
+                                    },
+                                    {
+                                        .binding = 2,
+                                        .buffer = storage_buffer_a,
+                                        .offset = 0,
+                                        .size = sizeof(float),
+                                    }};
 
-    WGPUBindGroup bind_group = wrapper.create_compute_bind_group("bind_group", compute_pipeline, 1, entries);
+    WGPUBindGroup bind_group = wrapper.create_compute_bind_group("bind_group", compute_pipeline, 0, 3, entries);
 
     WGPUCommandEncoder command_encoder = wrapper.create_command_encoder("command_encoder");
 
-    WGPUComputePassEncoder compute_pass_encoder = wrapper.create_compute_pass_encoder("compute_pass", command_encoder);
-    
-    wgpuComputePassEncoderSetPipeline(compute_pass_encoder, compute_pipeline);
-    wgpuComputePassEncoderSetBindGroup(compute_pass_encoder, 0, bind_group, 0, NULL);
+    ComputePass compute_pass = wrapper.create_compute_pass_encoder("compute_pass", command_encoder);
 
-    wgpuComputePassEncoderDispatchWorkgroups(compute_pass_encoder, buffer_size, 1, 1);
-    wgpuComputePassEncoderEnd(compute_pass_encoder);
-    wgpuComputePassEncoderRelease(compute_pass_encoder);
+    compute_pass.set_pipeline(compute_pipeline);
+    compute_pass.set_bindgroup(0, bind_group);
+
+    compute_pass.dispatch(buffer_size, 1, 1);
+    compute_pass.finish();
 
     wgpuCommandEncoderCopyBufferToBuffer(command_encoder, storage_buffer_x, 0, staging_buffer, 0, buffer_size);
 
@@ -62,18 +69,25 @@ int main(int argc, char const *argv[]) {
     WGPUCommandBuffer command_buffer = wgpuCommandEncoderFinish(command_encoder, &command_buff_desc);
 
     float x_num[buffer_f32_len] = {0};
+    float y_num[buffer_f32_len] = {0};
+    float a = 10;
     for (size_t i = 0; i < buffer_f32_len; i++) {
         x_num[i] = i;
+        y_num[i] = i * 2;
     }
 
     wgpuQueueWriteBuffer(queue, storage_buffer_x, 0, x_num, buffer_size);
+    wgpuQueueWriteBuffer(queue, storage_buffer_y, 0, y_num, buffer_size);
+    wgpuQueueWriteBuffer(queue, storage_buffer_a, 0, &a, sizeof(float));
     wgpuQueueSubmit(queue, 1, &command_buffer);
 
-    wgpuBufferMapAsync(staging_buffer, WGPUMapMode_Read, 0, buffer_size,
-                       (const WGPUBufferMapCallbackInfo){
-                           .callback = [](WGPUMapAsyncStatus status, WGPUStringView message, void *userdata1,
-                                          void *userdata2) { printf(" buffer_map status=%#.8x\n", status); }});
-    wgpuDevicePoll(wrapper.device, true, NULL);
+    wgpuBufferMapAsync(
+        staging_buffer, WGPUMapMode_Read, 0, buffer_size,
+        (const WGPUBufferMapCallbackInfo){
+            .callback = [](WGPUMapAsyncStatus status, WGPUStringView message, void *userdata1, void *userdata2) {}});
+
+    while (!wgpuDevicePoll(wrapper.device, true, NULL)) {
+    }
 
     float *buf = (float *)wgpuBufferGetMappedRange(staging_buffer, 0, buffer_size);
     assert(buf);
