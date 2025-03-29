@@ -8,12 +8,12 @@ var<storage, read> y: array<f32>;
 @binding(2)
 var<storage, read> a: f32; 
 
-fn sum(x: f32, y: f32) -> f32 {
+fn saxpy(x: f32, y: f32) -> f32 {
     return (a*x) + y;
 }
 
 @compute
 @workgroup_size(1)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
-    x[global_id.x] = sum(x[global_id.x], y[global_id.x]);
+    x[global_id.x] = saxpy(x[global_id.x], y[global_id.x]);
 }

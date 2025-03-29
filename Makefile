@@ -7,7 +7,8 @@ cxx_args = -L$(include_path) \
 	-Wl,-Bstatic -lwgpu_native -Wl,-Bdynamic \
 	-o $(out)
 
-cpp_files = $(shell find ./src -name '*.cpp')
+saxpy = ./src/main_saxpy.cpp
+collatz = ./src/main_collatz.cpp
 
 .all: build
 .PHONY: prepare build
@@ -31,7 +32,5 @@ prepare: build_wgpu build_wgpu_headers
 	sed -i 's|#include <webgpu/\(.*\)>|#include "\1"|' $(include_path)/webgpu.hpp
 
 build:
-	g++ $(cpp_files) $(cxx_args)
-
-run: build
-	./a.out
+	g++ $(saxpy) $(cxx_args) -o saxpy.out
+	g++ $(collatz) $(cxx_args) -o collatz.out

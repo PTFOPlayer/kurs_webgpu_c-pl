@@ -17,7 +17,7 @@ int main(int argc, char const *argv[]) {
 
     Queue queue = device.getQueue();
 
-    ifstream shader_file = ifstream("shader.wgsl");
+    ifstream shader_file = ifstream("src/saxpy.wgsl");
     string shader((std::istreambuf_iterator<char>(shader_file)), std::istreambuf_iterator<char>());
 
     ShaderSourceWGSL source(Default);
@@ -86,24 +86,24 @@ int main(int argc, char const *argv[]) {
 
     CommandEncoderDescriptor encoder_desc(Default);
     CommandEncoder encoder = device.createCommandEncoder(encoder_desc);
-    {
-        ComputePassEncoder compute_pass_encoder = encoder.beginComputePass({});
 
-        compute_pass_encoder.setPipeline(compute_pipeline);
-        compute_pass_encoder.setBindGroup(0, bind_group, 0, nullptr);
-        compute_pass_encoder.dispatchWorkgroups(buffer_f32_len, 1, 1);
-        compute_pass_encoder.end();
-    }
+    ComputePassEncoder compute_pass_encoder = encoder.beginComputePass({});
+
+    compute_pass_encoder.setPipeline(compute_pipeline);
+    compute_pass_encoder.setBindGroup(0, bind_group, 0, nullptr);
+    compute_pass_encoder.dispatchWorkgroups(buffer_f32_len, 1, 1);
+    compute_pass_encoder.end();
+
     encoder.copyBufferToBuffer(x_buffer, 0, staging, 0, buffer_size);
 
     CommandBuffer command_buffer = encoder.finish();
 
     float x_num[buffer_f32_len] = {0};
     float y_num[buffer_f32_len] = {0};
-    float a = 10;
+    float a = 3;
     for (size_t i = 0; i < buffer_f32_len; i++) {
         x_num[i] = i;
-        y_num[i] = i * 2;
+        y_num[i] = 3 * i;
     }
 
     queue.writeBuffer(x_buffer, 0, x_num, buffer_size);
