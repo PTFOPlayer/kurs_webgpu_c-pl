@@ -6,7 +6,7 @@ var<storage, read_write> out: array<u32>;
 var<storage, read> in: array<u32>;
 
 fn collatz(in: u32) -> u32 {
-    var iterations: u32 = 1;
+    var iterations: u32 = 0;
     var n = in;
     loop {
         if (n <= 1u) {
