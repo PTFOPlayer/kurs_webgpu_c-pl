@@ -1,4 +1,5 @@
 **/wgpu-native
+**/WebGPU-Cpp
 *.so
 *.a
 *.out
