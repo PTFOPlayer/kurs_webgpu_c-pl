@@ -1,1 +1,2 @@
 # Instancja, adapter i użądzenie
+

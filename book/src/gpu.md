@@ -30,4 +30,21 @@ Dla programisty oznacza to że jeśli mamy wektor danych, dla którego na każdy
 > źródło - [wikipedia](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data) \
 > *użycie w celach edukacyjnych*
 
-Niestety aby tego dokonać bezpiecznie pamięć która jest modyfikowana musi być rozłącznie rozdzielona pomiędzy jednostki, ponieważ każdy z rdzeni w jednej grupie nie może nadpisywać danych modyfikowanych lub czytanych przez pozostałe rdzenie.
+Niestety aby tego dokonać bezpiecznie pamięć która jest modyfikowana musi być rozłącznie rozdzielona pomiędzy jednostki, ponieważ każdy z rdzeni w jednej grupie nie może nadpisywać danych modyfikowanych lub czytanych przez pozostałe rdzenie. Przestrzeganie zasady aby rdzenie operowały na innych obszarach pamięci jest ważne ponieważ jeśli kilka rdzeni zrobi zapis do jednego obszaru pamięci to dane w tym obszarze będą losowe (tj. zostaną zapisane dane z ostatniego zapisującego rdzenia).
+
+## Pamięc w karcie graficznejs
+
+Karty graficzne korzystają z oddzielnej pamięci. Nie znaczy to że nie możemy jej modyfikować, wręcz przeciwnie, host (tj. procesor) ma dostęp do pamięci karty graficznej poprzez BAR (base address register) lub poprzez wysyłanie odpowiednich komend to karty. Nie jest to dostęp bezpośredni, co oznacza że nie możemy zapisać danych od razu na konkretny adres, musimy je najpierw zapisać w pamięci hosta a następnie kopiować do pamięci karty. 
+
+Zazwyczaj sekwencja według której wykonuje się komunikację z kartą wygląda w następujący sposób:
+1. Tworzenie buforów po stronie hosta - najlepiej jest tworzyć od razu wszystkie bufory (tj. te które będziemy wysyłać i te którymi będziemi odbierać dane) ponieawż wtedy kompilator zoptymalizuje alokacje.
+2. Tworzenie buforów po stronie GPU - jest to najdłużej trwający proces, odbywający się sekwencyjne (tj. procesor czeka aż GPU da informację zwrotną o poprawnej alokacji danego obszaru). Jeżeli jesteśmy w środowisku w którym renderujemy obraz najlepiej jest alokować je raz i potem używać ich ponownie w każdej klatce.
+3. Zapełnienie buforów hosta - w tym momencie wpisujemy dane do buforów hosta jak i zerujemy bufory wyjściowe (zerowanie jest opcjonalne ale preferowane).
+4. Kopiowanie buforów do GPU - kopiowanie danych również jest operacją sekwencyjną przez co powinno być wykonywane jak najrzadziej. 
+5. Kopiowanie buforów zwrotnych - ten etap jest wykonywany po egzekucji programu lub po skończonym etapie renderowania.
+
+![gpu_mem](GPU_MEM.png)
+> źródło - [wikipedia](https://en.wikipedia.org/wiki/Graphics_card) \
+> *użycie w celach edukacyjnych*
+
+

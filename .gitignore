@@ -4,3 +4,4 @@
 *.a
 *.out
 **/include
+src/adapter_info.cpp
