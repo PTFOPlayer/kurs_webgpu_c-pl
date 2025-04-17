@@ -7,12 +7,12 @@ cxx_args = -L$(include_path) \
 	-Wl,-Bstatic -lwgpu_native -Wl,-Bdynamic \
 	-o $(out)
 
-saxpy = ./src/main_saxpy.cpp
-collatz = ./src/main_collatz.cpp
-adapter = ./src/adapter_info.cpp
+saxpy = ./src/saxpy/saxpy.cpp
+collatz = ./src/collatz/collatz.cpp
+adapter = ./src/adapter_info/adapter_info.cpp
 
 .all: build_all
-.PHONY: prepare build_all build_saxpy build_collatz build_adapter run_saxpy run_collatz run_adapter
+.PHONY: prepare build_all build_saxpy build_collatz build_adapter run_saxpy run_collatz run_adapter cleanup
 
 build_wgpu:
 	-git clone --recursive https://github.com/gfx-rs/wgpu-native
@@ -31,6 +31,10 @@ prepare: build_wgpu build_wgpu_headers
 	cp $(wgpu_path)/target/release/libwgpu_native.so $(include_path)/libwgpu_native.so
 	cp $(wgpu_cpp_path)/wgpu-native/webgpu.hpp $(include_path)/webgpu.hpp
 	sed -i 's|#include <webgpu/\(.*\)>|#include "\1"|' $(include_path)/webgpu.hpp
+
+cleanup: 
+	rm -r WebGPU-Cpp
+	rm -r wgpu-native
 
 build_saxpy: 
 	g++ $(saxpy) $(cxx_args) -o saxpy.out

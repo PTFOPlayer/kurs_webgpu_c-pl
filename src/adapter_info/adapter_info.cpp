@@ -3,7 +3,7 @@
 #include <string>
 #define WEBGPU_CPP_IMPLEMENTATION
 
-#include "include/webgpu.hpp"
+#include "../include/webgpu.hpp"
 
 using namespace std;
 using namespace wgpu;

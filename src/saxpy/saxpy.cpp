@@ -3,7 +3,7 @@
 #include <string>
 #define WEBGPU_CPP_IMPLEMENTATION
 
-#include "include/webgpu.hpp"
+#include "../include/webgpu.hpp"
 
 using namespace std;
 using namespace wgpu;
@@ -17,7 +17,7 @@ int main(int argc, char const *argv[]) {
 
     Queue queue = device.getQueue();
 
-    ifstream shader_file = ifstream("src/saxpy.wgsl");
+    ifstream shader_file = ifstream("src/saxpy/saxpy.wgsl");
     string shader((std::istreambuf_iterator<char>(shader_file)), std::istreambuf_iterator<char>());
 
     ShaderSourceWGSL source(Default);

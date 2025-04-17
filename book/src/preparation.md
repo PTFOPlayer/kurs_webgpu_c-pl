@@ -37,9 +37,10 @@ cxx_args = -L$(include_path) \
 
 saxpy = ./src/main_saxpy.cpp
 collatz = ./src/main_collatz.cpp
+adapter = ./src/adapter_info.cpp
 
-.all: build
-.PHONY: prepare build
+.all: build_all
+.PHONY: prepare build_all build_saxpy build_collatz build_adapter run_saxpy run_collatz run_adapter cleanup
 
 build_wgpu:
 	-git clone --recursive https://github.com/gfx-rs/wgpu-native
@@ -59,9 +60,30 @@ prepare: build_wgpu build_wgpu_headers
 	cp $(wgpu_cpp_path)/wgpu-native/webgpu.hpp $(include_path)/webgpu.hpp
 	sed -i 's|#include <webgpu/\(.*\)>|#include "\1"|' $(include_path)/webgpu.hpp
 
-build:
+cleanup: 
+	rm -r WebGPU-Cpp
+	rm -r wgpu-native
+
+build_saxpy: 
 	g++ $(saxpy) $(cxx_args) -o saxpy.out
+
+build_collatz: 
 	g++ $(collatz) $(cxx_args) -o collatz.out
+
+build_adapter: 
+	g++ $(adapter) $(cxx_args) -o adapter.out
+ 
+build_all: build_saxpy build_collatz build_adapter
+	
+
+run_saxpy: build_saxpy
+	./saxpy.out
+
+run_collatz: build_collatz
+	./collatz.out
+
+run_adapter: build_adapter
+	./adapter.out
 ```
 
 Jeśli wykonamy `make prepare` w katalogu w którym znajduje się nasz `Makefile` zostanie utworzona następująca struktura projektu:
@@ -78,3 +100,5 @@ Jeśli wykonamy `make prepare` w katalogu w którym znajduje się nasz `Makefile
 |---WebGPU-Cpp (teoretycznie można usunąć to repozytorium po etapie kopiowania)
 |---wgpu-native (tutaj budowane są pliki libwgpu_native.a/.so, również można usunąć po etapie kopiowania)
 ```
+
+Następnie wykonanie `make cleanup` sprzątnie nam zbędne rzeczy pozostałe po etapie `prepare`, tj. usunięcie folderu `WebGPU-cpp` oraz `wgpu-native`
