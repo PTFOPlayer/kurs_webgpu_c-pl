@@ -3,7 +3,10 @@
 #include <string>
 #define WEBGPU_CPP_IMPLEMENTATION
 
-#include "../include/webgpu.hpp"
+#include <webgpu.hpp>
+
+#include "../shader.hpp"
+#include "../buffer.hpp"
 
 using namespace std;
 using namespace wgpu;
@@ -17,43 +20,16 @@ int main(int argc, char const *argv[]) {
 
     Queue queue = device.getQueue();
 
-    ifstream shader_file = ifstream("src/saxpy/saxpy.wgsl");
-    string shader((std::istreambuf_iterator<char>(shader_file)), std::istreambuf_iterator<char>());
-
     ShaderSourceWGSL source(Default);
-    source.code = {shader.data(), WGPU_STRLEN};
+    ShaderModule shader_module = create_shader_module(device, &source, "src/saxpy/saxpy.wgsl");
 
-    ShaderModuleDescriptor shader_module_desc;
-    shader_module_desc.nextInChain = (WGPUChainedStruct *)&source;
+    Buffer staging = create_buffer(device, BufferUsage::MapRead | BufferUsage::CopyDst, buffer_size, "staging");
+    
+    Buffer x_buffer = create_buffer(device, BufferUsage::Storage | BufferUsage::CopyDst | BufferUsage::CopySrc, buffer_size, "x_buffer");
 
-    ShaderModule shader_module = device.createShaderModule(shader_module_desc);
+    Buffer y_buffer = create_buffer(device, BufferUsage::Storage | BufferUsage::CopyDst, buffer_size, "y_buffer");
 
-    BufferDescriptor staging_desc(Default);
-    staging_desc.usage = BufferUsage::MapRead | BufferUsage::CopyDst;
-    staging_desc.size = buffer_size;
-
-    Buffer staging = device.createBuffer(staging_desc);
-
-    BufferDescriptor x_buffer_desc(Default);
-    x_buffer_desc.label = {"x_buffer", WGPU_STRLEN};
-    x_buffer_desc.usage = BufferUsage::Storage | BufferUsage::CopyDst | BufferUsage::CopySrc;
-    x_buffer_desc.size = buffer_size;
-
-    Buffer x_buffer = device.createBuffer(x_buffer_desc);
-
-    BufferDescriptor y_buffer_desc(Default);
-    y_buffer_desc.label = {"y_buffer", WGPU_STRLEN};
-    y_buffer_desc.usage = BufferUsage::Storage | BufferUsage::CopyDst;
-    y_buffer_desc.size = buffer_size;
-
-    Buffer y_buffer = device.createBuffer(y_buffer_desc);
-
-    BufferDescriptor a_buffer_desc(Default);
-    a_buffer_desc.label = {"a_buffer", WGPU_STRLEN};
-    a_buffer_desc.usage = BufferUsage::Storage | BufferUsage::CopyDst;
-    a_buffer_desc.size = sizeof(float);
-
-    Buffer a_buffer = device.createBuffer(a_buffer_desc);
+    Buffer a_buffer = create_buffer(device, BufferUsage::Storage | BufferUsage::CopyDst, sizeof(float), "a_buffer");
 
     ComputePipelineDescriptor compute_pipeline_desc(Default);
     compute_pipeline_desc.compute = {.module = shader_module, .entryPoint = {"main", WGPU_STRLEN}};

@@ -1,14 +1,16 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#define WEBGPU_CPP_IMPLEMENTATION
 
+#define WEBGPU_CPP_IMPLEMENTATION
 #include <webgpu.hpp>
+
 #include <SDL3/SDL.h>
 
+#include "../surface.hpp"
+#include "../shader.hpp"
 using namespace std;
 using namespace wgpu;
-Surface create_surface_with_sdl3(SDL_Window* window, Instance& instance);
 
 
 int main(int argc, char const *argv[]) {
@@ -28,28 +30,12 @@ int main(int argc, char const *argv[]) {
     Adapter adapter = instance.requestAdapter(adapter_options);
     Device device = adapter.requestDevice({});
 
-    SurfaceConfiguration config = {};
-    config.usage = TextureUsage::RenderAttachment;
-    config.format = WGPUTextureFormat_BGRA8Unorm;
-    config.width = 800;
-    config.height = 600;
-    config.presentMode = PresentMode::Fifo;
-    config.device = device;
-
-    surface.configure(config);
+    configure_surface(surface, device);
 
     Queue queue = device.getQueue();
 
-    ifstream shader_file = ifstream("src/triangle/triangle.wgsl");
-    string shader((std::istreambuf_iterator<char>(shader_file)), std::istreambuf_iterator<char>());
-
     ShaderSourceWGSL source(Default);
-    source.code = {shader.data(), WGPU_STRLEN};
-
-    ShaderModuleDescriptor shader_module_desc;
-    shader_module_desc.nextInChain = (WGPUChainedStruct *)&source;
-
-    ShaderModule shader_module = device.createShaderModule(shader_module_desc);
+    ShaderModule shader_module = create_shader_module(device, &source, "src/triangle/triangle.wgsl");
 
     RenderPipelineDescriptor render_desc(Default);
     render_desc.vertex.module = shader_module;
@@ -62,7 +48,6 @@ int main(int argc, char const *argv[]) {
     render_desc.primitive.frontFace = FrontFace::CCW;
     render_desc.primitive.cullMode = CullMode::None;
 
-    
     BlendState blend_state;
     blend_state.color.srcFactor = BlendFactor::SrcAlpha;
     blend_state.color.dstFactor = BlendFactor::OneMinusSrcAlpha;
@@ -138,27 +123,3 @@ int main(int argc, char const *argv[]) {
     return 0;
 }
 
-
-Surface create_surface_with_sdl3(SDL_Window* window, Instance& instance) {
-    // dla wayland
-    SDL_PropertiesID props = SDL_GetWindowProperties(window);
-    void* display = static_cast<struct wl_display*>(
-        SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr));
-    void* surface = static_cast<struct wl_surface*>(
-        SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, nullptr));
-        
-    if (!display || !surface) {
-        std::cerr << "Failed to get Wayland handles from SDL3 window!" << std::endl;
-        exit(1);
-    }
-
-    WGPUSurfaceSourceWaylandSurface waylandDesc = {};
-    waylandDesc.chain.sType = WGPUSType_SurfaceSourceWaylandSurface;
-    waylandDesc.display = display;
-    waylandDesc.surface = surface;
-
-    SurfaceDescriptor desc = {};
-    desc.nextInChain = reinterpret_cast<const WGPUChainedStruct*>(&waylandDesc);
-
-    return instance.createSurface(desc);
-}
