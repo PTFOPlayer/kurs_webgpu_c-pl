@@ -1,9 +1,8 @@
-#include <fstream>
 #include <iostream>
 #include <string>
 #define WEBGPU_CPP_IMPLEMENTATION
 
-#include "../include/webgpu.hpp"
+#include <webgpu.hpp>
 
 using namespace std;
 using namespace wgpu;
@@ -11,7 +10,6 @@ using namespace wgpu;
 int main(int argc, char const *argv[]) {
     Instance instance = createInstance({});
     Adapter adapter = instance.requestAdapter({});
-    Device device = adapter.requestDevice({});
 
     AdapterInfo adapter_info;
     adapter.getInfo(&adapter_info);
@@ -28,9 +26,6 @@ int main(int argc, char const *argv[]) {
             break;
         case WGPUAdapterType_Unknown:
             cout << "Adapter Type: Unknown" << "\n";
-            break;
-        case WGPUAdapterType_Force32:
-            cout << "Adapter Type: Force32" << "\n";
             break;
         default:
             break;
@@ -64,12 +59,10 @@ int main(int argc, char const *argv[]) {
         case WGPUBackendType_OpenGLES:
             cout << "Backend Type: OpenGLES" << "\n";
             break;
-        case WGPUBackendType_Force32:
-            cout << "Backend Type: Force32" << "\n";
-            break;
         default:
             break;
     }
+    
     cout << "GPU:\n";
     cout << "\t" << adapter_info.vendor.data << "\n";
     cout << "\t" << adapter_info.description.data << "\n";

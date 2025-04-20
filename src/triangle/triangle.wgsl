@@ -1,5 +1,3 @@
-
-
 struct VertexOutput {
     @builtin(position) position: vec4f,
     @location(0) local_pos: vec2f,
