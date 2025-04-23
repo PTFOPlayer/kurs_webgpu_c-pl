@@ -32,8 +32,6 @@ int main(int argc, char const *argv[]) {
 
     configure_surface(surface, device);
 
-    Queue queue = device.getQueue();
-
     ShaderSourceWGSL source(Default);
     ShaderModule shader_module = create_shader_module(device, &source, "src/triangle/triangle.wgsl");
 
@@ -77,6 +75,8 @@ int main(int argc, char const *argv[]) {
     render_desc.layout = nullptr;
 
     RenderPipeline pipeline = device.createRenderPipeline(render_desc);
+
+    Queue queue = device.getQueue();
 
     bool running = true;
     while (running) {

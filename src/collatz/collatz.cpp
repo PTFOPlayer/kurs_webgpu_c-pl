@@ -17,8 +17,6 @@ int main(int argc, char const *argv[]) {
     Adapter adapter = instance.requestAdapter({});
     Device device = adapter.requestDevice({});
 
-    Queue queue = device.getQueue();
-
     ShaderSourceWGSL source(Default);
     ShaderModule shader_module = create_shader_module(device, &source, "src/collatz/collatz.wgsl");
 
@@ -71,6 +69,8 @@ int main(int argc, char const *argv[]) {
     for (size_t i = 0; i < buffer_u32_len; i++) {
         in[i] = i;
     }
+
+    Queue queue = device.getQueue();
 
     queue.writeBuffer(input_buffer, 0, in, buffer_size);
 

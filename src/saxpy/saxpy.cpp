@@ -18,8 +18,6 @@ int main(int argc, char const *argv[]) {
     Adapter adapter = instance.requestAdapter({});
     Device device = adapter.requestDevice({});
 
-    Queue queue = device.getQueue();
-
     ShaderSourceWGSL source(Default);
     ShaderModule shader_module = create_shader_module(device, &source, "src/saxpy/saxpy.wgsl");
 
@@ -81,6 +79,8 @@ int main(int argc, char const *argv[]) {
         x_num[i] = i;
         y_num[i] = 3 * i;
     }
+
+    Queue queue = device.getQueue();
 
     queue.writeBuffer(x_buffer, 0, x_num, buffer_size);
     queue.writeBuffer(y_buffer, 0, y_num, buffer_size);

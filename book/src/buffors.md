@@ -3,7 +3,7 @@
 W poprzednim dziale poznaliśmy jak implementować bufory po stronie shadera. 
 
 Dla przypomnienia:
-```wgsl
+```typescript
 @group(0)
 @binding(0)
 var<storage, read_write> x: array<f32>; 
@@ -72,3 +72,81 @@ We wszystkich buforach drugim argumentem jest jego zastosowanie, przekazujemy tu
 * `CopySrc` - dane mogą być kopiowane z bufora
 * `MapRead` - dane mogą być odczytane i przekazane do hosta za pomocą mapowania
 
+## Pipeline obliczeniowy (polska nazwa to "potok")
+
+Kolejnym krokiem będzie stworzenie pipelineu obliczeniowego. Służy on do utworzenia grupy bindingów i powiązania z nimi buforów.
+
+
+Deskryptor pipelineu ma dwa póla które trzeba ustawić:
+* compute - określa moduł którego używamy i jego punkt wejścia (funkcja main)
+* label (opcjonalny) - nazwa używana w celach debugowania
+
+```cpp
+
+int main(int argc, char const *argv[]) {
+    ...
+    // deskryptor pipelineu
+    ComputePipelineDescriptor compute_pipeline_desc(Default);
+    // wskazanie używanego modułu shaderów i punktu wejścia
+    compute_pipeline_desc.compute = {.module = shader_module, .entryPoint = {"main", WGPU_STRLEN}};
+    // nazwa popelineu (używana przy debugowaniu)
+    compute_pipeline_desc.label = {"compute_pipeline", WGPU_STRLEN};
+    // tworzenie pipelineu
+    ComputePipeline compute_pipeline = device.createComputePipeline(compute_pipeline_desc);
+}
+```
+
+
+Teraz przy użyciu tego pipelineu oraz wcześniej utworzonych buforów można utworzyć grupę bindingów. Najpierw utworzymy tablicę wpisów w grupie. 
+
+Struktura wpisu:
+* binding - id bindigu w grupie
+* buffer - bufor który przypisujemy do tego bindingu
+* offset - ilość bajtów którą pomijamy w buforze
+* size - rozmiar bufora
+
+Tworzenie tablicy wpisów:
+```cpp
+
+int main(int argc, char const *argv[]) {
+    ...
+    
+    WGPUBindGroupEntry entries[] = {{
+                                        .binding = 0,
+                                        .buffer = x_buffer,
+                                        .offset = 0,
+                                        .size = buffer_size,
+                                    },
+                                    {
+                                        .binding = 1,
+                                        .buffer = y_buffer,
+                                        .offset = 0,
+                                        .size = buffer_size,
+                                    },
+                                    {
+                                        .binding = 2,
+                                        .buffer = a_buffer,
+                                        .offset = 0,
+                                        .size = sizeof(float),
+                                    }};
+}
+```
+
+Teraz możemy utworzyć grupę bindingów. W deskryptorze grupy musimy ustawić ilość wpisów oraz tablicę którą podajemy. Potrzebny nam będzie układ grupy tj. `BindGroupLayout` który pobieramy z pipelineu, jest on defniniowany przez pipeline na bazie podanego modułu. 
+
+```cpp
+
+int main(int argc, char const *argv[]) {
+    ...
+    BindGroupDescriptor bind_group_desc(Default);
+    // tablica wpisów
+    bind_group_desc.entries = entries;
+    // ilośc wpisów
+    bind_group_desc.entryCount = 3;
+    // układ grupy
+    bind_group_desc.layout = compute_pipeline.getBindGroupLayout(0);
+    // tworzenie grupy
+    BindGroup bind_group = device.createBindGroup(bind_group_desc);
+
+}
+```

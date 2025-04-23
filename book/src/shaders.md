@@ -13,7 +13,7 @@ Gdzie `x` i `y` są wetkrami danych, `a` jest zmienną wspólną a `z` jest wekt
 Niestety ale w przeciwieństwie do Cudy czy ROCm, webgpu wykorzystuje własny język do pisania shaderów. Jest to WGSL, został on opracowany we współpracy deweloperów JS, TS i Rust, a więcj dziedziczy też z tych języków składnię i niektóre elementy działania.
 
 Przykład kodu dla SAXPY:
-```wgsl
+```typescript
 @group(0)
 @binding(0)
 var<storage, read_write> x: array<f32>; 
@@ -56,7 +56,7 @@ WGSL jest silnie typowanym językiem, to znaczy że wszelkie konwersje typów mu
 * `vec4i`, `vec4u`, `vec4f` - 4 elementowy wektor (xyzw) zawierający typ i32, u32 lub f32
 
 Konstruowanie wektora:
-```wgsl
+```typescript
     let a = vec2f(1.0, 2.0) // tworzy wektor z elementami 1.0 i 2.0
     let b = vec4f(1.0) // wszystkie 4 elementy wektora to 1.0
     let c = vec3f(a, 3.0) // tworzy wektor 3 elementowy kopjując pierwsze dwa elementy z zmiennej `a`
@@ -72,7 +72,7 @@ Istnieją w rozmiarach od 2x2 do 4x4, należy podmienić C i R na konkretny rozm
 
 ### Struktury 
 Są definiowane w taki sam sposób jak w klasy w TS i struktury w Rust
-```wgsl
+```typescript
 struct SomeStruct {
     field1: u32,
     field2: f32,
@@ -82,7 +82,7 @@ struct SomeStruct {
 
 ### Wskaźniki
 Typ `ptr`, zazwyczaj ich typ nie jest tworzony ręcznie, działa dokładnie jak pointer w C
-```wgsl
+```typescript
 fn f() {
   var x: f32 = 1.5;
   let px = &x;  // wskaxnik do x
@@ -112,7 +112,7 @@ Aby zadeklarować binding musimy zdefiniować jego grupę za pomocą `@group(id
 
 W powyższym przykładzie mamy parę różnych bindingów
 
-```wgsl
+```typescript
 @group(0)
 @binding(0)
 var<storage, read_write> x: array<f32>; 
@@ -130,7 +130,7 @@ var<storage, read> a: f32;
 ### Klasyczne funkcje
 Funkcje są podobne do tych w TS i Rust, deklaruje je się przy użyciu `fn`, typ zwaracany funkcji definiuje się za pomocą `->` po argumentach np. funkcja z powyższego przykładu:
 
-```wgsl
+```typescript
 fn saxpy(x: f32, y: f32) -> f32 {
     return (a*x) + y;
 }
@@ -155,7 +155,7 @@ Funkcje oprócz argumentów podawanych z innych funkcji mogą przyjmować argume
 Dobrym przykładem argumetów wbudowanych jest `@builtin(global_invocation_id)`. Zwraca on informację o instancji odpalonej funkcji
 
 W powyższym przykładzie wykorzystujemy tą informację do indeksowania buforów.
-```wgsl
+```typescript
 @compute
 @workgroup_size(1)
 fn main(@builtin(global_invocation_id) global_id: vec3<u32>) {
@@ -209,7 +209,6 @@ Jak użyć powyższego kodu?
 
 
 ```cpp
-
 int main(int argc, char const *argv[]) {
     ...
     // tworzymy zmienną na przechowanie kodu shadera
