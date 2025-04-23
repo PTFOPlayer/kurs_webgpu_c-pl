@@ -3,3 +3,7 @@ authors = ["PTFOPlayer"]
 language = "en"
 multilingual = false
 src = "src"
+
+[preprocessor.katex]
+output = "html"
+after = ["links"]

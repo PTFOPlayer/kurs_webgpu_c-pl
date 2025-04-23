@@ -4,3 +4,5 @@
 - [Jak działa karta graficzna](./gpu.md)
 - [Przygotowanie projektu](./preparation.md)
 - [Instancja, adapter i urządzenie](./instance.md)
+- [Shadery](./shaders.md)
+- [Bufory i pipeline obliczeniowy](./buffors.md)
