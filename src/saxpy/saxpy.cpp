@@ -5,8 +5,8 @@
 
 #include <webgpu.hpp>
 
-#include "../shader.hpp"
 #include "../buffer.hpp"
+#include "../shader.hpp"
 
 using namespace std;
 using namespace wgpu;
@@ -22,8 +22,9 @@ int main(int argc, char const *argv[]) {
     ShaderModule shader_module = create_shader_module(device, &source, "src/saxpy/saxpy.wgsl");
 
     Buffer staging = create_buffer(device, BufferUsage::MapRead | BufferUsage::CopyDst, buffer_size, "staging");
-    
-    Buffer x_buffer = create_buffer(device, BufferUsage::Storage | BufferUsage::CopyDst | BufferUsage::CopySrc, buffer_size, "x_buffer");
+
+    Buffer x_buffer = create_buffer(device, BufferUsage::Storage | BufferUsage::CopyDst | BufferUsage::CopySrc,
+                                    buffer_size, "x_buffer");
 
     Buffer y_buffer = create_buffer(device, BufferUsage::Storage | BufferUsage::CopyDst, buffer_size, "y_buffer");
 
@@ -58,9 +59,7 @@ int main(int argc, char const *argv[]) {
     bind_group_desc.layout = compute_pipeline.getBindGroupLayout(0);
     BindGroup bind_group = device.createBindGroup(bind_group_desc);
 
-    CommandEncoderDescriptor encoder_desc(Default);
-    CommandEncoder encoder = device.createCommandEncoder(encoder_desc);
-
+    CommandEncoder encoder = device.createCommandEncoder({});
     ComputePassEncoder compute_pass_encoder = encoder.beginComputePass({});
 
     compute_pass_encoder.setPipeline(compute_pipeline);

@@ -6,3 +6,4 @@
 - [Instancja, adapter i urządzenie](./instance.md)
 - [Shadery](./shaders.md)
 - [Bufory i pipeline obliczeniowy](./buffors.md)
+- [Enkoder komend i kolejka](./commands.md)
