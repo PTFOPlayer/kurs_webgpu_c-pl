@@ -22,7 +22,7 @@ int main(int argc, char const *argv[]) {
     
     Instance instance = createInstance({});
     
-    Surface surface = create_surface_with_sdl3(window, instance);
+    Surface surface = create_surface(window, instance);
     
     RequestAdapterOptions adapter_options(Default);
     adapter_options.compatibleSurface = surface;

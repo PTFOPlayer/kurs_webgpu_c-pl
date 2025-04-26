@@ -3,20 +3,20 @@
 #include <string>
 #define WEBGPU_CPP_IMPLEMENTATION
 
-#include <webgpu.hpp>
 #include <SDL3/SDL.h>
+
+#include <webgpu.hpp>
 
 using namespace std;
 using namespace wgpu;
 
-Surface create_surface_with_sdl3(SDL_Window* window, Instance& instance) {
-    
+Surface create_surface(SDL_Window* window, Instance& instance) {
     SDL_PropertiesID props = SDL_GetWindowProperties(window);
     void* display = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr);
     void* surface = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, nullptr);
-        
+
     if (!display || !surface) {
-        std::cerr << "Failed to get Wayland handles from SDL3 window!" << std::endl;
+        std::cerr << "Failed to get Wayland handles from SDL3 window" << std::endl;
         exit(1);
     }
 
@@ -26,12 +26,12 @@ Surface create_surface_with_sdl3(SDL_Window* window, Instance& instance) {
     waylandDesc.surface = surface;
 
     SurfaceDescriptor desc = {};
-    desc.nextInChain = reinterpret_cast<const WGPUChainedStruct*>(&waylandDesc);
+    desc.nextInChain = (WGPUChainedStruct*)&waylandDesc;
 
     return instance.createSurface(desc);
 }
 
-void configure_surface(Surface & surface, Device device) {
+void configure_surface(Surface& surface, Device device) {
     SurfaceConfiguration config = {};
     config.usage = TextureUsage::RenderAttachment;
     config.format = WGPUTextureFormat_BGRA8Unorm;
