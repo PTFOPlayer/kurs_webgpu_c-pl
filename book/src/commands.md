@@ -84,7 +84,7 @@ Kopiowanie danych odbywa się za pomocą metody `.writeBuffer`. Przyjmuje ona ja
 
 Przekazywanie buforu komend oraz zakończenie (możemy wykonać submit ponownie z nowym buforem komend) kolejki wykonywane za pomocą metody `.submit` która przyjmuje bufor komend. Ten krok powoduje wykonanie się kodu shadera na urządzeniu.
 
-## Odczyta danych
+## Odczyt danych
 
 Teraz jak shader został wykonany możemy odczytać dane po obliczeniach. Zrobimy to z użyciem bufora pośredniczacego `staging`. Aby móc poprawnie go odczytać trzeba go zmapować. Mapowanie jest wykonywane asynchronicznie ponieważ urządzenie potrzebuje czasu na przekazanie danych. Jako argument przyjmuje strukture zawierającą lambdę "C style" (tzn nie może mieć przekazanych argumentów z środowiska poprzez []). W następnym kroku odczekujemy na zakończenie mapowania więc możemy zostawić lambdę pustą (ale musi ona istnieć).  
 
